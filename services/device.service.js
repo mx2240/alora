@@ -1,30 +1,40 @@
 const { db } = require("../config/firebase");
 
-// Create device inside a house
-exports.addDevice = async (userId, houseId, name, type) => {
-    const ref = db.ref("devices").push();
+// CREATE DEVICE
+exports.addDevice = async (ownerId, houseId, name, type) => {
+    if (!ownerId) {
+        throw new Error("ownerId is required");
+    }
 
-    await ref.set({
-        ownerId: userId,
+    const ref = db.ref(`houses/${houseId}/devices`).push();
+
+    const deviceData = {
+        id: ref.key,
+        ownerId,
         houseId,
         name,
-        type
-    });
+        type,
+        state: false,
+        createdAt: Date.now()
+    };
+
+    await ref.set(deviceData);
 
     return ref.key;
 };
 
-// Get devices for a house
-exports.getHouseDevices = async (houseId) => {
-    const snapshot = await db.ref("devices").once("value");
 
-    let devices = [];
+// GET DEVICES FOR HOUSE
+exports.getHouseDevices = async (houseId) => {
+    const snapshot = await db.ref(`houses/${houseId}/devices`).once("value");
+
+    const devices = [];
 
     snapshot.forEach(child => {
-        const data = child.val();
-        if (data.houseId === houseId) {
-            devices.push({ id: child.key, ...data });
-        }
+        devices.push({
+            id: child.key,
+            ...child.val()
+        });
     });
 
     return devices;

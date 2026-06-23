@@ -9,30 +9,19 @@ exports.addDevice = async (req, res) => {
         const { houseId, name, type } = req.body;
 
         const deviceId = await deviceService.addDevice(
-            req.user.id,
+            req.user.uid,   // ✅ FIXED HERE
             houseId,
             name,
             type
         );
 
         res.json({ deviceId });
+
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
-// Get devices of a house
-// exports.getDevices = async (req, res) => {
-//     try {
-//         const { houseId } = req.params;
-
-//         const devices = await deviceService.getHouseDevices(houseId);
-
-//         res.json(devices);
-//     } catch (err) {
-//         res.status(500).json({ error: err.message });
-//     }
-// };
 exports.getDevices = async (req, res) => {
     try {
         const { houseId } = req.params;
@@ -48,19 +37,6 @@ exports.getDevices = async (req, res) => {
 
 
 
-
-
-// exports.updateDevice = async (req, res) => {
-//     try {
-//         const { houseId, deviceId, state } = req.body;
-
-//         await setDeviceState(houseId, deviceId, state);
-
-//         res.json({ message: "Device updated" });
-//     } catch (err) {
-//         res.status(500).json({ error: err.message });
-//     }
-// };
 
 // Update device state
 exports.updateDevice = async (req, res) => {
