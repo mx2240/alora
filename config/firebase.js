@@ -55,41 +55,70 @@
 
 
 
+// const admin = require("firebase-admin");
+// const dbUrl = process.env.FIREBASE_DB_URL;
+
+// let app;
+
+// if (!dbUrl) {
+//     throw new Error("FIREBASE_DB_URL is missing");
+// }
+
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//     databaseURL: dbUrl
+// });
+
+// // CRITICAL FIX: Explicitly extract or generate the primary instance
+// if (admin.apps.length > 0) {
+//     app = admin.app(); // Safely retrieve the already initialized instance
+// } else {
+//     // Relative path lookup from the /config folder into the root directory
+//     const serviceAccount = require("../serviceAccountKey.json");
+
+//     console.log("FIREBASE_DB_URL =", process.env.FIREBASE_DB_URL);
+
+//     app = admin.initializeApp({
+//         credential: admin.credential.cert(serviceAccount),
+//         databaseURL: process.env.FIREBASE_DB_URL
+//     });
+// }
+
+// // Extract database and auth metrics bound specifically to the active app instance
+// const db = app.database();
+// const auth = app.auth();
+
+// module.exports = {
+//     admin,
+//     db,
+//     auth
+// };
+
+
+
 const admin = require("firebase-admin");
-const dbUrl = process.env.FIREBASE_DB_URL;
 
-let app;
+let firebaseApp;
 
-if (!dbUrl) {
-    throw new Error("FIREBASE_DB_URL is missing");
-}
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: dbUrl
-});
-
-// CRITICAL FIX: Explicitly extract or generate the primary instance
-if (admin.apps.length > 0) {
-    app = admin.app(); // Safely retrieve the already initialized instance
+if (admin.apps.length) {
+    firebaseApp = admin.app();
 } else {
-    // Relative path lookup from the /config folder into the root directory
     const serviceAccount = require("../serviceAccountKey.json");
 
-    console.log("FIREBASE_DB_URL =", process.env.FIREBASE_DB_URL);
-
-    app = admin.initializeApp({
+    firebaseApp = admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
         databaseURL: process.env.FIREBASE_DB_URL
     });
 }
 
-// Extract database and auth metrics bound specifically to the active app instance
-const db = app.database();
-const auth = app.auth();
+const db = firebaseApp.database();
+const auth = firebaseApp.auth();
 
 module.exports = {
     admin,
     db,
     auth
 };
+
+
+
