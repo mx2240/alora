@@ -88,6 +88,7 @@
 const { admin, db } = require("../config/firebase");
 const jwt = require("jsonwebtoken");
 const SECRET = process.env.JWT_SECRET || "alora_secret_key";
+const axios = require("axios");
 
 exports.register = async (req, res) => {
     try {
@@ -118,33 +119,83 @@ exports.register = async (req, res) => {
 
 
 
+// exports.login = async (req, res) => {
+//     try {
+//         const { idToken } = req.body;
+
+//         const decoded = await admin.auth().verifyIdToken(idToken);
+
+//         const token = jwt.sign(
+//             {
+//                 uid: decoded.uid,
+//                 email: decoded.email
+//             },
+//             SECRET,
+//             { expiresIn: "7d" }
+//         );
+
+//         res.json({
+//             message: "Login successful",
+//             token
+//         });
+
+//     } catch (err) {
+//         res.status(401).json({
+//             error: "Invalid Firebase token",
+//             message: err.message
+//         });
+//     }
+// };
+
+
+
 exports.login = async (req, res) => {
     try {
-        const { idToken } = req.body;
+        const { email, password } = req.body;
 
-        const decoded = await admin.auth().verifyIdToken(idToken);
+        if (!email || !password) {
+            return res.status(400).json({ error: "Email and password are required" });
+        }
 
+        // 1. Authenticate user credentials against the Firebase Client Authentication REST API
+        const firebaseResponse = await axios.post(
+            `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_WEB_API_KEY}`,
+            {
+                email,
+                password,
+                returnSecureToken: true
+            }
+        );
+
+        // 2. Extract the actual verified ID Token string
+        const { localId, email: userEmail } = firebaseResponse.data;
+
+        // 3. Securely sign your custom Express backend JWT application token
         const token = jwt.sign(
             {
-                uid: decoded.uid,
-                email: decoded.email
+                uid: localId,
+                email: userEmail
             },
             SECRET,
             { expiresIn: "7d" }
         );
 
-        res.json({
+        return res.json({
             message: "Login successful",
             token
         });
 
     } catch (err) {
-        res.status(401).json({
-            error: "Invalid Firebase token",
-            message: err.message
+        // Capture specific Firebase validation errors (like "EMAIL_NOT_FOUND" or "INVALID_PASSWORD")
+        const errorMessage = err.response?.data?.error?.message || err.message;
+        return res.status(401).json({
+            error: "Authentication failed",
+            message: errorMessage
         });
     }
 };
+
+
 
 
 exports.createUserProfile = async (req, res) => {
