@@ -357,20 +357,36 @@ exports.windowClose = async (req, res) => {
 };
 
 // 11. Handle RGB Complex Color Payload
+// Upgrade your RGB Control function to handle ON, OFF, and Colors
 exports.rgbControl = async (req, res) => {
     try {
         const { houseId, color } = req.body;
-        if (!houseId || !color) return res.status(400).json({ error: "Missing houseId or color" });
+        if (!houseId || !color) {
+            return res.status(400).json({ error: "Missing required fields: houseId and color" });
+        }
 
-        // FIX: Target the exact 'rgb' path directly
-        await db.ref(`houses/${houseId}/commands/rgb`).set(color);
-        return res.json({ success: true });
+        let targetValue = color.trim();
+
+        // Standardize input actions
+        if (targetValue.toUpperCase() === "ON") {
+            targetValue = "#FFFFFF"; // Turn on white if user says "ON"
+        } else if (targetValue.toUpperCase() === "OFF") {
+            targetValue = "#000000"; // Turn off if user says "OFF"
+        }
+
+        // Save cleanly directly to the child path
+        await db.ref(`houses/${houseId}/commands/rgb`).set(targetValue);
+
+        return res.json({ success: true, status: `RGB command set to ${targetValue}` });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 };
 
-// 12. Trigger Laser Toggle
+
+
+
+// 12. Trigger Laser Toggles
 exports.laserControl = async (req, res) => {
     try {
         const { houseId, state } = req.body;
