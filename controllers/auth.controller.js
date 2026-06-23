@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const SECRET = process.env.JWT_SECRET || "alora_secret_key";
 const axios = require("axios");
 
-
 exports.login = async (req, res) => {
     const { email, password } = req.body;
 
