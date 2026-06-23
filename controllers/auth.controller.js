@@ -159,7 +159,7 @@ exports.login = async (req, res) => {
 
         // 1. Authenticate user credentials against the Firebase Client Authentication REST API
         const firebaseResponse = await axios.post(
-            `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_WEB_API_KEY}`,
+            `https://googleapis.com{process.env.FIREBASE_WEB_API_KEY}`,
             {
                 email,
                 password,
