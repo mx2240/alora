@@ -1,22 +1,48 @@
-// const { pushSensors } = require("../services/firebase.service");
+// // const { pushSensors } = require("../services/firebase.service");
+
+// // exports.uploadSensors = async (req, res) => {
+// //     try {
+// //         const { houseId, temp, hum, light, rain, human } = req.body;
+
+// //         await pushSensors(houseId, {
+// //             temp,
+// //             hum,
+// //             light,
+// //             rain,
+// //             human
+// //         });
+
+// //         res.json({ message: "Sensors updated" });
+// //     } catch (err) {
+// //         res.status(500).json({ error: err.message });
+// //     }
+// // };
+
+
+
+
+// const { db } = require("../config/firebase");
 
 // exports.uploadSensors = async (req, res) => {
 //     try {
 //         const { houseId, temp, hum, light, rain, human } = req.body;
 
-//         await pushSensors(houseId, {
+//         await db.ref(`houses/${houseId}/sensors`).push({
 //             temp,
 //             hum,
 //             light,
 //             rain,
-//             human
+//             human,
+//             time: Date.now()
 //         });
 
-//         res.json({ message: "Sensors updated" });
+//         res.json({ message: "Sensors saved" });
+
 //     } catch (err) {
 //         res.status(500).json({ error: err.message });
 //     }
 // };
+
 
 
 
@@ -33,10 +59,10 @@ exports.uploadSensors = async (req, res) => {
             light,
             rain,
             human,
-            time: Date.now()
+            timestamp: Date.now()
         });
 
-        res.json({ message: "Sensors saved" });
+        res.json({ success: true });
 
     } catch (err) {
         res.status(500).json({ error: err.message });
