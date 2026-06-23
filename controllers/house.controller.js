@@ -56,6 +56,7 @@
 //     }
 // };
 
+const { db } = require("../config/firebase");
 
 
 exports.getUserHouses = async (req, res) => {

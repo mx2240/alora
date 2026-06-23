@@ -19,23 +19,6 @@
 
 
 
-
-// const express = require("express");
-// const router = express.Router();
-
-// const deviceController = require("../controllers/device.controller");
-// const auth = require("../middleware/auth.middleware");
-
-// // secure routes
-// router.post("/add", auth, deviceController.addDevice);
-// router.get("/house/:houseId", auth, deviceController.getDevices);
-// router.post("/update", auth, deviceController.updateDevice);
-// router.get("/list/:houseId", auth, deviceController.listDevices);
-// module.exports = router;
-
-
-
-
 const router = require("express").Router();
 
 const deviceController = require("../controllers/device.controller");
