@@ -150,12 +150,136 @@ exports.listDevices = async (req, res) => {
 // =========================================================================
 
 // 5. Turn LED ON
+// exports.ledOn = async (req, res) => {
+//     try {
+//         const { houseId } = req.body;
+//         if (!houseId) return res.status(400).json({ error: "Missing houseId" });
+
+//         await db.ref(`houses/${houseId}/commands`).update({ led: true });
+//         return res.json({ success: true });
+//     } catch (err) {
+//         return res.status(500).json({ error: err.message });
+//     }
+// };
+
+// // 6. Turn LED OFF
+// exports.ledOff = async (req, res) => {
+//     try {
+//         const { houseId } = req.body;
+//         if (!houseId) return res.status(400).json({ error: "Missing houseId" });
+
+//         await db.ref(`houses/${houseId}/commands`).update({ led: false });
+//         return res.json({ success: true });
+//     } catch (err) {
+//         return res.status(500).json({ error: err.message });
+//     }
+// };
+
+// // 7. Trigger Door Open
+// exports.doorOpen = async (req, res) => {
+//     try {
+//         const { houseId } = req.body;
+//         if (!houseId) return res.status(400).json({ error: "Missing houseId" });
+
+//         await db.ref(`houses/${houseId}/commands`).update({ door: "open" });
+//         return res.json({ success: true });
+//     } catch (err) {
+//         return res.status(500).json({ error: err.message });
+//     }
+// };
+
+// // 8. Trigger Door Close
+// exports.doorClose = async (req, res) => {
+//     try {
+//         const { houseId } = req.body;
+//         if (!houseId) return res.status(400).json({ error: "Missing houseId" });
+
+//         await db.ref(`houses/${houseId}/commands`).update({ door: "close" });
+//         return res.json({ success: true });
+//     } catch (err) {
+//         return res.status(500).json({ error: err.message });
+//     }
+// };
+
+
+// // 9. Trigger Window Open
+// exports.windowOpen = async (req, res) => {
+//     try {
+//         const { houseId } = req.body;
+//         if (!houseId) return res.status(400).json({ error: "Missing houseId" });
+
+//         await db.ref(`houses/${houseId}/commands`).update({ window: "open" });
+//         return res.json({ success: true, status: "window open command sent" });
+//     } catch (err) {
+//         return res.status(500).json({ error: err.message });
+//     }
+// };
+
+// // 10. Trigger Window Close
+// exports.windowClose = async (req, res) => {
+//     try {
+//         const { houseId } = req.body;
+//         if (!houseId) return res.status(400).json({ error: "Missing houseId" });
+
+//         await db.ref(`houses/${houseId}/commands`).update({ window: "close" });
+//         return res.json({ success: true, status: "window close command sent" });
+//     } catch (err) {
+//         return res.status(500).json({ error: err.message });
+//     }
+// };
+
+// // 11. Handle RGB Complex Color Payload (e.g., passing "#FF5733" or r,g,b values)
+// exports.rgbControl = async (req, res) => {
+//     try {
+//         const { houseId, color } = req.body;
+//         if (!houseId || !color) {
+//             return res.status(400).json({ error: "Missing required fields: houseId and color" });
+//         }
+
+//         await db.ref(`houses/${houseId}/commands`).update({
+//             rgb: color,
+//             rgbUpdatedAt: Date.now()
+//         });
+
+//         return res.json({ success: true, status: `RGB updated to ${color}` });
+//     } catch (err) {
+//         return res.status(500).json({ error: err.message });
+//     }
+// };
+
+// // 12. Trigger Laser Toggle (Expects a boolean state parameter true/false)
+// exports.laserControl = async (req, res) => {
+//     try {
+//         const { houseId, state } = req.body;
+//         if (!houseId || state === undefined) {
+//             return res.status(400).json({ error: "Missing required fields: houseId and state (true/false)" });
+//         }
+
+//         await db.ref(`houses/${houseId}/commands`).update({
+//             laser: Boolean(state)
+//         });
+
+//         return res.json({ success: true, status: `Laser set to ${state}` });
+//     } catch (err) {
+//         return res.status(500).json({ error: err.message });
+//     }
+// };
+
+
+
+
+// =========================================================================
+// UNIFIED COMMAND ENDPOINTS (Fixed for Single-Path Firebase Streaming)
+// =========================================================================
+
+// 5. Turn LED ON
 exports.ledOn = async (req, res) => {
     try {
         const { houseId } = req.body;
         if (!houseId) return res.status(400).json({ error: "Missing houseId" });
 
-        await db.ref(`houses/${houseId}/commands`).update({ led: true });
+        // FIX: Target the exact 'led' path directly
+        await db.ref(`houses/${houseId}/commands/led`).set(true);
         return res.json({ success: true });
     } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -168,7 +292,8 @@ exports.ledOff = async (req, res) => {
         const { houseId } = req.body;
         if (!houseId) return res.status(400).json({ error: "Missing houseId" });
 
-        await db.ref(`houses/${houseId}/commands`).update({ led: false });
+        // FIX: Target the exact 'led' path directly
+        await db.ref(`houses/${houseId}/commands/led`).set(false);
         return res.json({ success: true });
     } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -181,7 +306,8 @@ exports.doorOpen = async (req, res) => {
         const { houseId } = req.body;
         if (!houseId) return res.status(400).json({ error: "Missing houseId" });
 
-        await db.ref(`houses/${houseId}/commands`).update({ door: "open" });
+        // FIX: Target the exact 'door' path directly
+        await db.ref(`houses/${houseId}/commands/door`).set("open");
         return res.json({ success: true });
     } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -194,13 +320,13 @@ exports.doorClose = async (req, res) => {
         const { houseId } = req.body;
         if (!houseId) return res.status(400).json({ error: "Missing houseId" });
 
-        await db.ref(`houses/${houseId}/commands`).update({ door: "close" });
+        // FIX: Target the exact 'door' path directly
+        await db.ref(`houses/${houseId}/commands/door`).set("close");
         return res.json({ success: true });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 };
-
 
 // 9. Trigger Window Open
 exports.windowOpen = async (req, res) => {
@@ -208,8 +334,9 @@ exports.windowOpen = async (req, res) => {
         const { houseId } = req.body;
         if (!houseId) return res.status(400).json({ error: "Missing houseId" });
 
-        await db.ref(`houses/${houseId}/commands`).update({ window: "open" });
-        return res.json({ success: true, status: "window open command sent" });
+        // FIX: Target the exact 'window' path directly
+        await db.ref(`houses/${houseId}/commands/window`).set("open");
+        return res.json({ success: true });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
@@ -221,45 +348,37 @@ exports.windowClose = async (req, res) => {
         const { houseId } = req.body;
         if (!houseId) return res.status(400).json({ error: "Missing houseId" });
 
-        await db.ref(`houses/${houseId}/commands`).update({ window: "close" });
-        return res.json({ success: true, status: "window close command sent" });
+        // FIX: Target the exact 'window' path directly
+        await db.ref(`houses/${houseId}/commands/window`).set("close");
+        return res.json({ success: true });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 };
 
-// 11. Handle RGB Complex Color Payload (e.g., passing "#FF5733" or r,g,b values)
+// 11. Handle RGB Complex Color Payload
 exports.rgbControl = async (req, res) => {
     try {
         const { houseId, color } = req.body;
-        if (!houseId || !color) {
-            return res.status(400).json({ error: "Missing required fields: houseId and color" });
-        }
+        if (!houseId || !color) return res.status(400).json({ error: "Missing houseId or color" });
 
-        await db.ref(`houses/${houseId}/commands`).update({
-            rgb: color,
-            rgbUpdatedAt: Date.now()
-        });
-
-        return res.json({ success: true, status: `RGB updated to ${color}` });
+        // FIX: Target the exact 'rgb' path directly
+        await db.ref(`houses/${houseId}/commands/rgb`).set(color);
+        return res.json({ success: true });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 };
 
-// 12. Trigger Laser Toggle (Expects a boolean state parameter true/false)
+// 12. Trigger Laser Toggle
 exports.laserControl = async (req, res) => {
     try {
         const { houseId, state } = req.body;
-        if (!houseId || state === undefined) {
-            return res.status(400).json({ error: "Missing required fields: houseId and state (true/false)" });
-        }
+        if (!houseId || state === undefined) return res.status(400).json({ error: "Missing houseId or state" });
 
-        await db.ref(`houses/${houseId}/commands`).update({
-            laser: Boolean(state)
-        });
-
-        return res.json({ success: true, status: `Laser set to ${state}` });
+        // FIX: Target the exact 'laser' path directly
+        await db.ref(`houses/${houseId}/commands/laser`).set(Boolean(state));
+        return res.json({ success: true });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
