@@ -14,7 +14,7 @@
 
 const router = require("express").Router();
 const authController = require("../controllers/auth.controller");
-const verifyToken = require("../middleware/authMiddleware"); // Your JWT verifier
+const verifyToken = require("../middleware/auth.middleware"); // Your JWT verifier
 
 router.post("/login", authController.login);
 router.post("/register", authController.register);
