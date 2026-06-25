@@ -51,6 +51,7 @@ const auth = require("../middleware/auth.middleware");
 router.post("/add", auth, deviceController.addDevice);
 router.get("/list/:houseId", auth, deviceController.listDevices);
 router.post("/update-state", auth, deviceController.updateDevice);
+router.delete("/delete/:deviceId", auth, deviceController.deleteDevice);
 
 // LED & Door Commands
 router.post("/led/on", auth, deviceController.ledOn);

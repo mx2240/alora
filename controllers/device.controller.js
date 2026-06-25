@@ -208,7 +208,30 @@ exports.laserControl = async (req, res) => {
 };
 
 
+// Add this to the bottom of your controller file
+exports.deleteDevice = async (req, res) => {
+    try {
+        // In your ExpressBackendOnline.java, you use /api/device/:deviceId
+        const { deviceId } = req.params;
+        const { houseId } = req.query; // Or pass houseId in body/params
 
+        if (!deviceId) {
+            return res.status(400).json({ error: "Missing deviceId" });
+        }
+
+        // 1. Remove from the house's device list
+        // Note: You need the houseId. If you use a fixed HOUSE_ID in Android, 
+        // you should send it or hardcode it here for now.
+        const targetHouse = houseId || "-OvnyifHWb64IRyjmIKq";
+
+        await db.ref(`houses/${targetHouse}/devices/${deviceId}`).remove();
+
+        return res.json({ success: true, message: "Device deleted from backend" });
+
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};
 
 
 
