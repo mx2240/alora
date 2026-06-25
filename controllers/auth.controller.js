@@ -7,32 +7,30 @@ const axios = require("axios");
 exports.login = async (req, res) => {
     const { email, password } = req.body;
 
-    const user = await db.ref("users").once("value");
+    // Search by index if possible, or filter
+    const snapshot = await db.ref("users").orderByChild("email").equalTo(email).once("value");
 
-    let foundUser = null;
-
-    user.forEach(child => {
-        if (child.val().email === email) {
-            foundUser = { uid: child.key, ...child.val() };
-        }
-    });
-
-    if (!foundUser) {
+    if (!snapshot.exists()) {
         return res.status(401).json({ error: "User not found" });
     }
 
+    const userData = snapshot.val();
+    const uid = Object.keys(userData)[0];
+    const user = userData[uid];
+
+    // CRITICAL: Check password (add hashing like bcrypt later)
+    if (user.password !== password) {
+        return res.status(401).json({ error: "Invalid password" });
+    }
+
     const token = jwt.sign(
-        {
-            uid: foundUser.uid,
-            email: foundUser.email
-        },
+        { uid: uid, email: user.email },
         SECRET,
         { expiresIn: "7d" }
     );
 
-    res.json({ token });
+    res.json({ token, user: { name: user.name, email: user.email } });
 };
-
 
 
 
@@ -68,6 +66,26 @@ exports.createUserProfile = async (req, res) => {
         });
 
         res.json({ message: "User profile created" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+
+exports.getProfile = async (req, res) => {
+    try {
+        // req.user comes from your JWT middleware
+        const uid = req.user.uid;
+        const snapshot = await db.ref(`users/${uid}`).once("value");
+
+        if (!snapshot.exists()) {
+            return res.status(404).json({ error: "User profile not found" });
+        }
+
+        res.json({
+            success: true,
+            user: snapshot.val()
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
