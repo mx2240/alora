@@ -22,7 +22,9 @@ const router = express.Router();
 const sensorController = require("../controllers/sensor.controller");
 const deviceAuth = require("../middleware/deviceAuth.middleware"); // Verify path matches your file name
 
-// Ensure your device authentication middleware sits in front of the controller
+// Ensure your device authentication middleware sits in front of the controllers
 router.post("/upload", deviceAuth, sensorController.uploadSensors);
+
+router.get("/:houseId", sensorController.getLatestSensors);
 
 module.exports = router;

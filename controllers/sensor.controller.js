@@ -107,4 +107,35 @@ exports.uploadSensors = async (req, res) => {
         console.error("❌ SENSOR UPLOAD CONTROLLER ERROR:", err.message);
         return res.status(500).json({ error: err.message });
     }
+
 };
+
+// --- GET LATEST SENSORS ---
+exports.getLatestSensors = async (req, res) => {
+    try {
+        const { houseId } = req.params; // Expects /api/sensor/:houseId
+
+        if (!houseId) {
+            return res.status(400).json({ error: "Missing houseId" });
+        }
+
+        // Fetch only the last 1 record from the sensors list
+        const snapshot = await db.ref(`houses/${houseId}/sensors`)
+            .orderByChild("timestamp")
+            .limitToLast(1)
+            .get();
+
+        const data = snapshot.val();
+        if (!data) {
+            return res.json({ temp: 0, hum: 0, message: "No data yet" });
+        }
+
+        // Firebase .limitToLast returns an object with a random key, we need the inner values
+        const latestKey = Object.keys(data)[0];
+        return res.json(data[latestKey]);
+
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};
+
