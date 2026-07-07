@@ -6,6 +6,9 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
 // 2. Your routes are imported AFTER dotenv loads the variables
 const houseRoutes = require("./routes/house.routes");
 const authRoutes = require("./routes/auth.routes");
@@ -44,14 +47,30 @@ app.get("/health", (req, res) => {
 });
 
 
-// Express Backend Route
+// Add the Chat Route
 app.post('/api/ai/chat', async (req, res) => {
-    const { message } = req.body;
-    // The Backend uses the API Key stored in Environment Variables
-    const aiResponse = await callGemini(process.env.GEMINI_API_KEY, message);
-    res.json({ reply: aiResponse });
-});
+    try {
+        const { message } = req.body;
 
+        if (!message) {
+            return res.status(400).json({ error: "Message is required" });
+        }
+
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+
+        // System prompt ensures it behaves like Alora
+        const prompt = "You are Alora, a smart home AI assistant. Be helpful, concise, and friendly. User says: " + message;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
+        res.json({ reply: text });
+    } catch (error) {
+        console.error("Gemini Error:", error);
+        res.status(500).json({ error: "Failed to communicate with AI brain." });
+    }
+});
 
 // Routes
 app.use("/api/house", houseRoutes);
