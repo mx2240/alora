@@ -57,7 +57,7 @@ app.post('/api/ai/chat', async (req, res) => {
         }
 
         // Change this line in app.js
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
         // System prompt ensures it behaves like Alora
         const prompt = "You are Alora, a smart home AI assistant. Be helpful, concise, and friendly. User says: " + message;
 
