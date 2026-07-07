@@ -56,8 +56,8 @@ app.post('/api/ai/chat', async (req, res) => {
             return res.status(400).json({ error: "Message is required" });
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
-
+        // Change this line in app.js
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         // System prompt ensures it behaves like Alora
         const prompt = "You are Alora, a smart home AI assistant. Be helpful, concise, and friendly. User says: " + message;
 
