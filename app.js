@@ -43,6 +43,16 @@ app.get("/health", (req, res) => {
     });
 });
 
+
+// Express Backend Route
+app.post('/api/ai/chat', async (req, res) => {
+    const { message } = req.body;
+    // The Backend uses the API Key stored in Environment Variables
+    const aiResponse = await callGemini(process.env.GEMINI_API_KEY, message);
+    res.json({ reply: aiResponse });
+});
+
+
 // Routes
 app.use("/api/house", houseRoutes);
 app.use("/api/auth", authRoutes);
