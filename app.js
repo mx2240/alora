@@ -5,9 +5,20 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const Bottleneck = require("bottleneck"); // <-- 1. ADD THIS IMPORT
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// 2. Configure the Rate Limiter Queue
+// Max 15 requests per 60000ms (1 minute), minimum 4000ms (4 seconds) between requests
+const aiLimiter = new Bottleneck({
+    reservoir: 15,
+    reservoirRefreshAmount: 15,
+    reservoirRefreshInterval: 60 * 1000,
+    minTime: 4000,
+    maxConcurrent: 1
+});
 
 // 2. Your routes are imported AFTER dotenv loads the variables
 const houseRoutes = require("./routes/house.routes");
@@ -47,7 +58,7 @@ app.get("/health", (req, res) => {
 });
 
 
-// Add the Chat Route
+// Add the Chat Route with Bottleneck Queue
 app.post('/api/ai/chat', async (req, res) => {
     try {
         const { message } = req.body;
@@ -56,21 +67,29 @@ app.post('/api/ai/chat', async (req, res) => {
             return res.status(400).json({ error: "Message is required" });
         }
 
-        // Change this line in app.js
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
-        // System prompt ensures it behaves like Alora
-        const prompt = "You are Alora, a smart home AI assistant. Be helpful, concise, and friendly. User says: " + message;
+        // Wrap the API execution inside the limiter queue
+        const replyText = await aiLimiter.schedule(async () => {
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+            const prompt = "You are Alora, a smart home AI assistant. Be helpful, concise, and friendly. User says: " + message;
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            return response.text();
+        });
 
-        res.json({ reply: text });
+        res.json({ reply: replyText });
     } catch (error) {
         console.error("Gemini Error:", error);
+
+        // Return a cleaner message if bottleneck drops requests or Gemini rejects
+        if (error.message && error.message.includes("Quota exceeded")) {
+            return res.status(429).json({ error: "The AI brain is busy. Please wait a few seconds and try again." });
+        }
+
         res.status(500).json({ error: "Failed to communicate with AI brain." });
     }
 });
+
 
 // Routes
 app.use("/api/house", houseRoutes);
